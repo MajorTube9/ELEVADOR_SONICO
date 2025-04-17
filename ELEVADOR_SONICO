@@ -35,8 +35,9 @@ LOOP:
 ; ROTINA PARA O TÉRREO (ANDAR 0)
 ; =============================================
 ANDAR_0:
+	 SETB P1.0
     CJNE R0, #00H, MOVER_0  ; Compara R0 com 0 (térreo), se diferente, vai para MOVER_0
-    SJMP ABRIR_PORTA         ; Se já está no térreo, vai direto para abrir a porta
+	SJMP ABRIR_PORTA         ; Se já está no térreo, vai direto para abrir a porta
 
 MOVER_0:
     CLR P2.4            ; Fecha porta (desliga LED da porta) - CLR = Clear Bit (coloca em 0)
@@ -53,6 +54,7 @@ MOVER_0:
 ; ROTINA PARA O 1º ANDAR (ANDAR 1)
 ; =============================================
 ANDAR_1:
+	 SETB P1.1
     CJNE R0, #01H, MOVER_1  ; Se não está no 1º andar, vai para MOVER_1
     SJMP ABRIR_PORTA         ; Se já está aqui, só abre a porta
 
@@ -71,7 +73,8 @@ MOVER_1:
 ; ROTINA PARA O 2º ANDAR (ANDAR 2)
 ; =============================================
 ANDAR_2:
-    CJNE R0, #02H, MOVER_2  ; Verifica se já está no 2º andar
+     SETB P1.2
+CJNE R0, #02H, MOVER_2  ; Verifica se já está no 2º andar
     SJMP ABRIR_PORTA        ; Se sim, abre a porta
 
 MOVER_2:
@@ -89,6 +92,7 @@ MOVER_2:
 ; ROTINA PARA O 3º ANDAR (ANDAR 3)
 ; =============================================
 ANDAR_3:
+SETB P1.3
     CJNE R0, #03H, MOVER_3  ; Compara se já está no 3º andar
     SJMP ABRIR_PORTA        ; Se já está, só abre a porta
 
@@ -109,7 +113,6 @@ MOVER_3:
 ABRIR_PORTA:
     SETB P2.4           ; Acende LED da porta aberta (abre porta)
     CALL ATRASO         ; Mantém porta aberta por um tempo
-    CALL ATRASO         ; Dobra o tempo de porta aberta (2 delays)
     CLR P2.4            ; Fecha porta (apaga LED)
     SJMP LOOP           ; Retorna ao loop principal para novas solicitações
 
@@ -117,11 +120,11 @@ ABRIR_PORTA:
 ; SUB-ROTINA DE ATRASO (DELAY) - CONTROLA TEMPOS
 ; =============================================
 ATRASO:
-    MOV R5, #50         ; Configura contador externo (R5 = 50)
+    MOV R5, #10         ; Configura contador externo (R5 = )
 ATRASO1:
-    MOV R6, #100        ; Configura contador intermediário (R6 = 100)
+    MOV R6, #10        ; Configura contador intermediário (R6 = )
 ATRASO2:
-    MOV R7, #100        ; Configura contador interno (R7 = 100)
+    MOV R7, #10        ; Configura contador interno (R7 = )
 ATRASO3:
     DJNZ R7, ATRASO3    ; Decrementa R7 até zero (loop interno)
     DJNZ R6, ATRASO2    ; Decrementa R6 até zero (loop intermediário)
