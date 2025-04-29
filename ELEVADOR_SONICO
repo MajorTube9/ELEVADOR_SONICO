@@ -3,6 +3,7 @@
       ; Entradas: P2.0-P2.3 (Botões dos andares)
       ; Saídas:   P1.0-P1.3 (Indicadores de andar)
       ;           P1.4 (Porta aberta)
+      ;led 4 (porta aberta)
       ; =============================================
        
       ORG 0000H
