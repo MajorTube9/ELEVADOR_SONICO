@@ -143,17 +143,165 @@
       ; =============================================
       ; SUB-ROTINA DE ATRASO (DELAY)
       ; =============================================
+            ; =============================================
+      ; Elevador simples com 4 andares para EdSim51
+      ; Entradas: P2.0-P2.3 (Botões dos andares)
+      ; Saídas:   P1.0-P1.3 (Indicadores de andar)
+      ;           P1.4 (Porta aberta)
+      ;led 4 (porta aberta)
+      ; =============================================
+       
+      ORG 0000H
+0000|     LJMP MAIN       ; Salta para o programa principal
+       
+      ORG 0030H           ; Área do programa principal
+      MAIN:
+          ; Inicialização do sistema
+0030|     MOV P1, #00H    ; Desliga todos os LEDs (saídas)
+0033|     MOV P2, #0FFH   ; Configura P2 como entrada com pull-up interno
+          
+          ; Estado inicial: elevador no térreo
+0036|     MOV R0, #00H    ; R0 guarda o andar atual (0=Térreo, 1=1º andar, etc.)
+0038|     SETB P1.0       ; Acende LED do térreo (P1.0)
+       
+      ; =============================================
+      ; LOOP PRINCIPAL - Verifica solicitações de andar
+      ; =============================================
+      LOOP:
+          ; Verifica cada botão de andar
+003A|     JNB P2.0, ANDAR_0    ; Botão térreo
+003D|     JNB P2.1, ANDAR_1    ; Botão 1º andar
+0040|     JNB P2.2, ANDAR_2    ; Botão 2º andar
+0043|     JNB P2.3, ANDAR_3    ; Botão 3º andar
+          
+0046|     SJMP LOOP           ; Volta ao início do loop
+       
+      ; =============================================
+      ; ROTINA PARA O TÉRREO (ANDAR 0)
+      ; =============================================
+      ANDAR_0:
+0048|     CALL DEBOUNCE       ; Espera o botão ser solto
+004A|     CJNE R0, #00H, MOVER_0  ; Se não está no térreo, move
+004D|     SJMP ABRIR_PORTA         ; Se já está, só abre a porta
+       
+      MOVER_0:
+004F|     CLR P1.4            ; Fecha porta
+0051|     CALL ATRASO         ; Aguarda tempo de fechamento
+          
+          ; Atualiza display e variável
+0053|     MOV A, P1           ; Lê o estado atual de P1
+0055|     ANL A, #11100000B   ; Mantém apenas os bits 7-5 (se usados para outros fins)
+0057|     ORL A, #00000001B   ; Acende apenas o LED do térreo
+0059|     MOV P1, A           ; Atualiza P1
+005B|     MOV R0, #00H        ; Atualiza andar atual
+          
+005D|     SJMP ABRIR_PORTA    ; Abre a porta
+       
+      ; =============================================
+      ; ROTINA PARA O 1º ANDAR (ANDAR 1)
+      ; =============================================
+      ANDAR_1:
+005F|     CALL DEBOUNCE
+0061|     CJNE R0, #01H, MOVER_1
+0064|     SJMP ABRIR_PORTA
+       
+      MOVER_1:
+0066|     CLR P1.4            ; Fecha porta
+0068|     CALL ATRASO         ; Aguarda movimento
+          
+006A|     MOV A, P1
+006C|     ANL A, #11100000B
+006E|     ORL A, #00000010B   ; Acende apenas o LED do 1º andar
+0070|     MOV P1, A
+0072|     MOV R0, #01H        ; Atualiza andar atual
+          
+0074|     SJMP ABRIR_PORTA
+       
+      ; =============================================
+      ; ROTINA PARA O 2º ANDAR (ANDAR 2)
+      ; =============================================
+      ANDAR_2:
+0076|     CALL DEBOUNCE
+0078|     CJNE R0, #02H, MOVER_2
+007B|     SJMP ABRIR_PORTA
+       
+      MOVER_2:
+007D|     CLR P1.4            ; Fecha porta
+007F|     CALL ATRASO         ; Aguarda movimento
+          
+0081|     MOV A, P1
+0083|     ANL A, #11100000B
+0085|     ORL A, #00000100B   ; Acende apenas o LED do 2º andar
+0087|     MOV P1, A
+0089|     MOV R0, #02H        ; Atualiza andar atual
+          
+008B|     SJMP ABRIR_PORTA
+       
+      ; =============================================
+      ; ROTINA PARA O 3º ANDAR (ANDAR 3)
+      ; =============================================
+      ANDAR_3:
+008D|     CALL DEBOUNCE
+008F|     CJNE R0, #03H, MOVER_3
+0092|     SJMP ABRIR_PORTA
+       
+      MOVER_3:
+0094|     CLR P1.4            ; Fecha porta
+0096|     CALL ATRASO         ; Aguarda movimento
+          
+0098|     MOV A, P1
+009A|     ANL A, #11100000B
+009C|     ORL A, #00001000B   ; Acende apenas o LED do 3º andar
+009E|     MOV P1, A
+00A0|     MOV R0, #03H        ; Atualiza andar atual
+          
+          ; Flui diretamente para ABRIR_PORTA
+       
+      ; =============================================
+      ; ROTINA PARA ABRIR A PORTA (COMUM A TODOS ANDARES)
+      ; =============================================
+      ABRIR_PORTA:
+00A2|     SETB P1.4           ; Acende LED da porta aberta
+00A4|     CALL ATRASO         ; Mantém porta aberta
+00A6|     CLR P1.4            ; Fecha porta
+00A8|     SJMP LOOP           ; Retorna ao loop principal
+       
+      ; =============================================
+      ; SUB-ROTINA DE DEBOUNCE (EVITA LEITURA MÚLTIPLA)
+      ; =============================================
+      DEBOUNCE:
+00AA|     CALL ATRASO         ; Espera um pouco
+00AC|     JB P2.0, DEB1       ; Verifica se botão ainda pressionado
+00AF|     SJMP DEBOUNCE
+      DEB1:
+00B1|     JB P2.1, DEB2
+00B4|     SJMP DEBOUNCE
+      DEB2:
+00B6|     JB P2.2, DEB3
+00B9|     SJMP DEBOUNCE
+      DEB3:
+00BB|     JB P2.3, DEBOUNCE_END
+00BE|     SJMP DEBOUNCE
+      DEBOUNCE_END:
+00C0|     RET
+       
+      ; =============================================
+      ; SUB-ROTINA DE ATRASO (DELAY)
+      ; =============================================
       ATRASO:
-00C1|     MOV R5, #50         ; Contador externo
+00C1|     MOV R5, #20         ; Contador externo
       ATRASO1:
-00C3|     MOV R6, #100        ; Contador intermediário
+00C3|     MOV R6, #50        ; Contador intermediário
       ATRASO2:
-00C5|     MOV R7, #100        ; Contador interno
+00C5|     MOV R7, #50        ; Contador interno
       ATRASO3:
 00C7|     DJNZ R7, ATRASO3    ; Decrementa R7
 00C9|     DJNZ R6, ATRASO2    ; Decrementa R6
 00CB|     DJNZ R5, ATRASO1    ; Decrementa R5
 00CD|     RET
+       
+      ; =============================================
+      END  ; Fim do programa
        
       ; =============================================
       END  ; Fim do programa
