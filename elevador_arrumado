@@ -1,0 +1,159 @@
+
+      ; =============================================
+      ; Elevador simples com 4 andares para EdSim51
+      ; Entradas: P2.0-P2.3 (Botões dos andares)
+      ; Saídas:   P1.0-P1.3 (Indicadores de andar)
+      ;           P1.4 (Porta aberta)
+      ; =============================================
+       
+      ORG 0000H
+     LJMP MAIN       ; Salta para o programa principal
+       
+      ORG 0030H           ; Área do programa principal
+      MAIN:
+          ; Inicialização do sistema
+     MOV P1, #00H    ; Desliga todos os LEDs (saídas)
+     MOV P2, #0FFH   ; Configura P2 como entrada com pull-up interno
+          
+          ; Estado inicial: elevador no térreo
+     MOV R0, #00H    ; R0 guarda o andar atual (0=Térreo, 1=1º andar, etc.)
+     SETB P1.0       ; Acende LED do térreo (P1.0)
+       
+      ; =============================================
+      ; LOOP PRINCIPAL - Verifica solicitações de andar
+      ; =============================================
+      LOOP:
+          ; Verifica cada botão de andar
+    JNB P2.0, ANDAR_0    ; Botão térreo
+     JNB P2.1, ANDAR_1    ; Botão 1º andar
+     JNB P2.2, ANDAR_2    ; Botão 2º andar
+     JNB P2.3, ANDAR_3    ; Botão 3º andar
+          
+     SJMP LOOP           ; Volta ao início do loop
+       
+      ; =============================================
+      ; ROTINA PARA O TÉRREO (ANDAR 0)
+      ; =============================================
+      ANDAR_0:
+     CALL DEBOUNCE       ; Espera o botão ser solto
+     CJNE R0, #00H, MOVER_0  ; Se não está no térreo, move
+     SJMP ABRIR_PORTA         ; Se já está, só abre a porta
+       
+      MOVER_0:
+     CLR P1.4            ; Fecha porta
+     CALL ATRASO         ; Aguarda tempo de fechamento
+          
+          ; Atualiza display e variável
+     MOV A, P1           ; Lê o estado atual de P1
+     ANL A, #11100000B   ; Mantém apenas os bits 7-5 (se usados para outros fins)
+     ORL A, #00000001B   ; Acende apenas o LED do térreo
+     MOV P1, A           ; Atualiza P1
+     MOV R0, #00H        ; Atualiza andar atual
+          
+     SJMP ABRIR_PORTA    ; Abre a porta
+       
+      ; =============================================
+      ; ROTINA PARA O 1º ANDAR (ANDAR 1)
+      ; =============================================
+      ANDAR_1:
+     CALL DEBOUNCE
+     CJNE R0, #01H, MOVER_1
+     SJMP ABRIR_PORTA
+       
+      MOVER_1:
+     CLR P1.4            ; Fecha porta
+     CALL ATRASO         ; Aguarda movimento
+          
+     MOV A, P1
+     ANL A, #11100000B
+     ORL A, #00000010B   ; Acende apenas o LED do 1º andar
+     MOV P1, A
+     MOV R0, #01H        ; Atualiza andar atual
+          
+     SJMP ABRIR_PORTA
+       
+      ; =============================================
+      ; ROTINA PARA O 2º ANDAR (ANDAR 2)
+      ; =============================================
+      ANDAR_2:
+    CALL DEBOUNCE
+    CJNE R0, #02H, MOVER_2
+     SJMP ABRIR_PORTA
+       
+      MOVER_2:
+     CLR P1.4            ; Fecha porta
+     CALL ATRASO         ; Aguarda movimento
+          
+     MOV A, P1
+     ANL A, #11100000B
+     ORL A, #00000100B   ; Acende apenas o LED do 2º andar
+     MOV P1, A
+     MOV R0, #02H        ; Atualiza andar atual
+          
+     SJMP ABRIR_PORTA
+       
+      ; =============================================
+      ; ROTINA PARA O 3º ANDAR (ANDAR 3)
+      ; =============================================
+      ANDAR_3:
+     CALL DEBOUNCE
+     CJNE R0, #03H, MOVER_3
+     SJMP ABRIR_PORTA
+       
+      MOVER_3:
+     CLR P1.4            ; Fecha porta
+    CALL ATRASO         ; Aguarda movimento
+          
+     MOV A, P1
+     ANL A, #11100000B
+     ORL A, #00001000B   ; Acende apenas o LED do 3º andar
+     MOV P1, A
+     MOV R0, #03H        ; Atualiza andar atual
+          
+          ; Flui diretamente para ABRIR_PORTA
+       
+      ; =============================================
+      ; ROTINA PARA ABRIR A PORTA (COMUM A TODOS ANDARES)
+      ; =============================================
+      ABRIR_PORTA:
+     SETB P1.4           ; Acende LED da porta aberta
+     CALL ATRASO         ; Mantém porta aberta
+     CLR P1.4            ; Fecha porta
+     SJMP LOOP           ; Retorna ao loop principal
+       
+      ; =============================================
+      ; SUB-ROTINA DE DEBOUNCE (EVITA LEITURA MÚLTIPLA)
+      ; =============================================
+      DEBOUNCE:
+     CALL ATRASO         ; Espera um pouco
+     JB P2.0, DEB1       ; Verifica se botão ainda pressionado
+    SJMP DEBOUNCE
+      DEB1:
+     JB P2.1, DEB2
+     SJMP DEBOUNCE
+      DEB2:
+     JB P2.2, DEB3
+     SJMP DEBOUNCE
+      DEB3:
+    JB P2.3, DEBOUNCE_END
+    SJMP DEBOUNCE
+      DEBOUNCE_END:
+     RET
+       
+      ; =============================================
+      ; SUB-ROTINA DE ATRASO (DELAY)
+      ; =============================================
+      ATRASO:
+     MOV R5, #50         ; Contador externo
+      ATRASO1:
+     MOV R6, #100        ; Contador intermediário
+      ATRASO2:
+    MOV R7, #100        ; Contador interno
+      ATRASO3:
+     DJNZ R7, ATRASO3    ; Decrementa R7
+    DJNZ R6, ATRASO2    ; Decrementa R6
+     DJNZ R5, ATRASO1    ; Decrementa R5
+     RET
+       
+      ; =============================================
+      END  ; Fim do programa
