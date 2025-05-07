@@ -1,68 +1,80 @@
 # ELEVADOR_SONICO
 
-📝 Descrição
-Este projeto implementa um sistema de controle de elevador simples para 4 andares (térreo + 3 andares) utilizando o simulador EdSim51. O sistema permite a seleção de andares através de botões e fornece feedback visual do andar atual e estado da porta.
+📋 Descrição
+Sistema de controle de elevador inteligente para 4 andares (térreo + 3 andares) no EdSim51, com:
+✅ Botões externos (chamada de andar)
+✅ Botões internos (seleção dentro do elevador)
+✅ Feedback visual (LEDs indicando andar atual e status da porta)
 
-🛠️ Hardware Necessário
-Entradas (conectar a P1):
+🖥️ Configuração de Hardware
+Entradas
+🔘 Botões Externos (Porta P1) → Chamar elevador para um andar:
 
-P1.0: Botão do Térreo
+P1.0 → Térreo
 
-P1.1: Botão do 1º Andar
+P1.1 → 1º Andar
 
-P1.2: Botão do 2º Andar
+P1.2 → 2º Andar
 
-P1.3: Botão do 3º Andar
+P1.3 → 3º Andar
 
-Saídas (conectar a P2):
+🔘 Botões Internos (Porta P3) → Seleção de destino dentro do elevador:
 
-P2.0: LED do Térreo
+P3.0 → Térreo
 
-P2.1: LED do 1º Andar
+P3.1 → 1º Andar
 
-P2.2: LED do 2º Andar
+P3.2 → 2º Andar
 
-P2.3: LED do 3º Andar
+P3.3 → 3º Andar
 
-P2.4: LED da Porta Aberta
+Saídas (Porta P2) → Indicadores visuais:
+P2.0 → LED Térreo
 
-🚀 Funcionalidades
-Controle completo de 4 andares
+P2.1 → LED 1º Andar
 
-Sistema de abertura/fechamento de porta com temporização
+P2.2 → LED 2º Andar
 
-Feedback visual do andar atual
+P2.3 → LED 3º Andar
 
-Lógica que evita movimento desnecessário quando já está no andar solicitado
+P2.4 → LED Porta Aberta
 
-⚙️ Lógica de Operação
-Inicialização:
+⚡ Funcionalidades Aprimoradas
+✔ Dupla entrada de comandos (dentro e fora do elevador)
+✔ Priorização inteligente (se já estiver no andar, só abre/fecha a porta)
+✔ Temporização ajustável (2 ciclos para porta, 1 ciclo para movimento)
+✔ Economia de movimento (evita deslocamentos desnecessários)
 
-Elevador começa no térreo (P2.0 ativo)
+🔄 Lógica de Operação
+1. Estado Inicial
+Elevador no térreo (P2.0 ativo)
 
 Porta fechada (P2.4 desligado)
 
-Seleção de Andar:
+2. Modos de Ativação
+Botão externo (P1) → Chama o elevador para o andar
 
-Ao pressionar um botão:
+Botão interno (P3) → Seleciona o destino
 
-Se já está no andar: abre e fecha a porta
+3. Comportamento
+Se já estiver no andar solicitado:
 
-Se em outro andar: fecha porta → muda andar → abre porta
+Abre → Espera 2 ciclos → Fecha a porta
 
-Temporização:
+Se estiver em outro andar:
 
-Porta fica aberta por 2 ciclos de delay
+Fecha a porta → Move-se → Abre a porta
 
-Movimento entre andares usa 1 ciclo de delay
+🏗️ Estrutura do Código
+MAIN → Loop principal e inicialização
 
-🧩 Estrutura do Código
-MAIN: Inicialização e loop principal
+ANDAR_X → Lógica específica para cada andar
 
-ANDAR_X: Rotinas para cada andar (0 a 3)
+MOVER_X → Transição entre andares
 
-MOVER_X: Lógica de movimento para cada andar
+ABRIR_PORTA → Controle da porta
 
-ABRIR_PORTA: Controle da porta do elevador
+ATRASO → Temporização
 
-ATRASO: Sub-rotina de delay para temporização
+Melhoria:
+Agora o sistema verifica tanto P1 (externo) quanto P3 (interno) para decidir o movimento, tornando-o mais realista! 🚀
