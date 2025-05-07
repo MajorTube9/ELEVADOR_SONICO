@@ -1,5 +1,5 @@
 ; =============================================
-; Elevador Completo para EdSim51
+; Elevador Completo para EdSim51 com P2 e P3
 ; =============================================
 
 ORG 0000H
@@ -13,6 +13,7 @@ MAIN:
     ; Inicialização
     MOV P1, #00H
     MOV P2, #0FFH
+    MOV P3, #0FFH
     MOV TMOD, #20H
     MOV TH1, #0FDH
     MOV SCON, #50H
@@ -24,10 +25,18 @@ MAIN:
     SETB P1.4         ; Porta aberta
 
 LOOP:
+    ; Verifica botões no P2
     JNB P2.0, CALL_ANDAR_0
     JNB P2.1, CALL_ANDAR_1
     JNB P2.2, CALL_ANDAR_2
     JNB P2.3, CALL_ANDAR_3
+    
+    ; Verifica botões no P3
+    JNB P3.0, CALL_ANDAR_0
+    JNB P3.1, CALL_ANDAR_1
+    JNB P3.2, CALL_ANDAR_2
+    JNB P3.3, CALL_ANDAR_3
+    
     SJMP LOOP
 
 CALL_ANDAR_0:
@@ -47,6 +56,7 @@ CALL_ANDAR_3:
     SJMP LOOP
 
 ; ========== ROTINAS DE ANDAR ==========
+; (O restante do código permanece igual...)
 
 ANDAR_0:
     CALL DEBOUNCE
@@ -206,6 +216,7 @@ MOSTRA_MOVIMENTO:
 
 DEBOUNCE:
     LCALL ATRASO
+    ; Verifica debounce para P2
     JB P2.0, DEB1
     SJMP DEBOUNCE
 DEB1:
@@ -215,7 +226,20 @@ DEB2:
     JB P2.2, DEB3
     SJMP DEBOUNCE
 DEB3:
-    JB P2.3, DEB_END
+    JB P2.3, DEB4
+    SJMP DEBOUNCE
+    ; Verifica debounce para P3
+DEB4:
+    JB P3.0, DEB5
+    SJMP DEBOUNCE
+DEB5:
+    JB P3.1, DEB6
+    SJMP DEBOUNCE
+DEB6:
+    JB P3.2, DEB7
+    SJMP DEBOUNCE
+DEB7:
+    JB P3.3, DEB_END
     SJMP DEBOUNCE
 DEB_END:
     RET
@@ -244,11 +268,11 @@ SERIAL_END:
     RETI
 
 ATRASO:
-    MOV R5, #25
+    MOV R5, #10
 ATRASO1:
-    MOV R6, #50
+    MOV R6, #10
 ATRASO2:
-    MOV R7, #50
+    MOV R7, #10
 ATRASO3:
     DJNZ R7, ATRASO3
     DJNZ R6, ATRASO2
