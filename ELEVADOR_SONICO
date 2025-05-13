@@ -1,10 +1,14 @@
-
 ; =============================================
-; Elevador para EdSim51 com P2, P3 e teclado matricial
+; Elevador para EdSim51 com P2, P3, teclado matricial e controle de motor
 ; =============================================
 
 ORG 0000H
 LJMP MAIN
+
+ORG 001BH ; Interrupção do Timer 1 para controle do motor
+CPL P3.0  ; Alterna os pinos do motor
+CPL P3.1
+RETI
 
 ORG 0030H
 MAIN:
@@ -14,8 +18,18 @@ MAIN:
     MOV P3, #0FFH
     MOV P0, #0FFH    ; Inicializa teclado matricial
     MOV 30H, #00H    ; Andar atual (0=Térreo, 1-3=Andares)
-    SETB P1.0         ; Inicia no térreo
-    SETB P1.4         ; Porta aberta
+    SETB P1.0        ; Inicia no térreo
+    SETB P1.4        ; Porta aberta
+    
+    ; Configuração do Timer para controle do motor
+    MOV TMOD, #01100000b ; Timer 1 no modo 2 (auto-recarregável)
+    SETB EA             ; Habilita interrupções globais
+    SETB ET1            ; Habilita interrupção do Timer 1
+    SETB TR1            ; Inicia o Timer 1
+    
+    ; Inicializa motor parado
+    SETB P3.0
+    SETB P3.1
 
 LOOP:
     ; Verifica botões no P2
@@ -34,7 +48,7 @@ LOOP:
     LCALL VERIFICA_TECLADO
     SJMP LOOP
 
-; Rotinas de chamada dos andares
+; Rotinas de chamada dos andares (mantidas iguais)
 CALL_ANDAR_0:
     LCALL ANDAR_0
     SJMP LOOP
@@ -86,7 +100,7 @@ TECLA_3:
     LCALL DEBOUNCE
     LJMP CALL_ANDAR_3
 
-; ========== ROTINAS DE ANDAR (SUA LÓGICA ORIGINAL) ==========
+; ========== ROTINAS DE ANDAR COM CONTROLE DE MOTOR ==========
 ANDAR_0:
     CALL DEBOUNCE
     MOV A, 30H
@@ -96,6 +110,10 @@ ANDAR_0:
 MOVER_0:
     LCALL FECHAR_PORTA
     MOV R1, 30H
+    
+    ; Configura motor para descer (sentido anti-horário)
+    CLR P3.0
+    SETB P3.1
     
 MOVE_DOWN_0:
     CJNE R1, #00H, CONTINUE_DOWN_0
@@ -107,6 +125,10 @@ CONTINUE_DOWN_0:
     SJMP MOVE_DOWN_0
 
 CHEGOU_ANDAR_0:
+    ; Para o motor
+    SETB P3.0
+    SETB P3.1
+    
     MOV P1, #00H
     SETB P1.0
     MOV 30H, #00H
@@ -129,6 +151,10 @@ MOVER_1:
     SJMP DESCER_1
 
 SUBIR_1:
+    ; Configura motor para subir (sentido horário)
+    SETB P3.0
+    CLR P3.1
+    
     CJNE R1, #01H, CONTINUE_UP_1
     SJMP CHEGOU_ANDAR_1
     
@@ -138,6 +164,10 @@ CONTINUE_UP_1:
     SJMP SUBIR_1
 
 DESCER_1:
+    ; Configura motor para descer (sentido anti-horário)
+    CLR P3.0
+    SETB P3.1
+    
     CJNE R1, #01H, CONTINUE_DOWN_1
     SJMP CHEGOU_ANDAR_1
     
@@ -147,6 +177,10 @@ CONTINUE_DOWN_1:
     SJMP DESCER_1
 
 CHEGOU_ANDAR_1:
+    ; Para o motor
+    SETB P3.0
+    SETB P3.1
+    
     MOV P1, #00H
     SETB P1.1
     MOV 30H, #01H
@@ -169,6 +203,10 @@ MOVER_2:
     SJMP DESCER_2
 
 SUBIR_2:
+    ; Configura motor para subir (sentido horário)
+    SETB P3.0
+    CLR P3.1
+    
     CJNE R1, #02H, CONTINUE_UP_2
     SJMP CHEGOU_ANDAR_2
     
@@ -178,6 +216,10 @@ CONTINUE_UP_2:
     SJMP SUBIR_2
 
 DESCER_2:
+    ; Configura motor para descer (sentido anti-horário)
+    CLR P3.0
+    SETB P3.1
+    
     CJNE R1, #02H, CONTINUE_DOWN_2
     SJMP CHEGOU_ANDAR_2
     
@@ -187,6 +229,10 @@ CONTINUE_DOWN_2:
     SJMP DESCER_2
 
 CHEGOU_ANDAR_2:
+    ; Para o motor
+    SETB P3.0
+    SETB P3.1
+    
     MOV P1, #00H
     SETB P1.2
     MOV 30H, #02H
@@ -203,6 +249,10 @@ MOVER_3:
     LCALL FECHAR_PORTA
     MOV R1, 30H
     
+    ; Configura motor para subir (sentido horário)
+    SETB P3.0
+    CLR P3.1
+    
 SUBIR_3:
     CJNE R1, #03H, CONTINUE_UP_3
     SJMP CHEGOU_ANDAR_3
@@ -213,6 +263,10 @@ CONTINUE_UP_3:
     SJMP SUBIR_3
 
 CHEGOU_ANDAR_3:
+    ; Para o motor
+    SETB P3.0
+    SETB P3.1
+    
     MOV P1, #00H
     SETB P1.3
     MOV 30H, #03H
