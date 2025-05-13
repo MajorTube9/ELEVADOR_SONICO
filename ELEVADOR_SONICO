@@ -1,5 +1,5 @@
 ; =============================================
-; Elevador para EdSim51 com P2 e P3 (sem serial)
+; Elevador para EdSim51 com P2, P3 e teclado matricial
 ; =============================================
 
 ORG 0000H
@@ -11,6 +11,7 @@ MAIN:
     MOV P1, #00H
     MOV P2, #0FFH
     MOV P3, #0FFH
+    MOV P0, #0FFH    ; Inicializa teclado matricial
     MOV 30H, #00H    ; Andar atual (0=Térreo, 1-3=Andares)
     SETB P1.0         ; Inicia no térreo
     SETB P1.4         ; Porta aberta
@@ -28,8 +29,11 @@ LOOP:
     JNB P3.2, CALL_ANDAR_2
     JNB P3.3, CALL_ANDAR_3
     
+    ; Verifica teclado matricial
+    LCALL VERIFICA_TECLADO
     SJMP LOOP
 
+; Rotinas de chamada dos andares
 CALL_ANDAR_0:
     LCALL ANDAR_0
     SJMP LOOP
@@ -46,8 +50,42 @@ CALL_ANDAR_3:
     LCALL ANDAR_3
     SJMP LOOP
 
-; ========== ROTINAS DE ANDAR ==========
+; ========== ROTINA DO TECLADO MATRICIAL ==========
+VERIFICA_TECLADO:
+    ; Verifica linha 0 (andar 0)
+    CLR P0.0          ; Ativa linha 0
+    JNB P0.4, TECLA_0 ; Verifica coluna 0
+    SETB P0.0         ; Desativa linha 0
+    
+    ; Verifica linha 1 (andares 1-3)
+    CLR P0.1          ; Ativa linha 1
+    JNB P0.4, TECLA_1 ; Verifica coluna 0
+    JNB P0.5, TECLA_2 ; Verifica coluna 1
+    JNB P0.6, TECLA_3 ; Verifica coluna 2
+    SETB P0.1         ; Desativa linha 1
+    RET
 
+TECLA_0:
+    SETB P0.0         ; Desativa linha 0
+    LCALL DEBOUNCE
+    LJMP CALL_ANDAR_0
+
+TECLA_1:
+    SETB P0.1         ; Desativa linha 1
+    LCALL DEBOUNCE
+    LJMP CALL_ANDAR_1
+
+TECLA_2:
+    SETB P0.1         ; Desativa linha 1
+    LCALL DEBOUNCE
+    LJMP CALL_ANDAR_2
+
+TECLA_3:
+    SETB P0.1         ; Desativa linha 1
+    LCALL DEBOUNCE
+    LJMP CALL_ANDAR_3
+
+; ========== ROTINAS DE ANDAR (SUA LÓGICA ORIGINAL) ==========
 ANDAR_0:
     CALL DEBOUNCE
     MOV A, 30H
@@ -181,7 +219,6 @@ CHEGOU_ANDAR_3:
     RET
 
 ; ========== ROTINAS COMPARTILHADAS ==========
-
 FECHAR_PORTA:
     CLR P1.4
     LCALL ATRASO
@@ -219,3 +256,5 @@ ATRASO3:
     DJNZ R6, ATRASO2
     DJNZ R5, ATRASO1
     RET
+
+END
