@@ -4,6 +4,7 @@
 Sistema de controle de elevador inteligente para 4 andares (térreo + 3 andares) no EdSim51, com:
 ✅ Botões externos (chamada de andar)
 ✅ Botões internos (seleção dentro do elevador)
+✅ Motor (mostra o funcionamento do elevador)
 ✅ Feedback visual (LEDs indicando andar atual e status da porta)
 
 🖥️ Configuração de Hardware
@@ -18,7 +19,7 @@ P1.2 → 2º Andar
 
 P1.3 → 3º Andar
 
-🔘 Botões Internos (Porta P3) → Seleção de destino dentro do elevador:
+🔘 Botões Internos, teclado matricial (Porta P3) → Seleção de destino dentro do elevador:
 
 P3.0 → Térreo
 
