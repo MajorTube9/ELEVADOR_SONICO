@@ -81,6 +81,7 @@ Melhoria:
 Agora o sistema verifica tanto P1 (externo) quanto P3 (interno) para decidir o movimento, tornando-o mais realista! 🚀
 
 
+![image](https://github.com/user-attachments/assets/2e00f227-ae63-4dbd-814e-620191c08e25)
 
 
 ![Image](https://github.com/user-attachments/assets/904e4a1c-f8ca-44c3-b4e7-c4993824f463)
