@@ -7,6 +7,17 @@ Sistema de controle de elevador inteligente para 4 andares (térreo + 3 andares)
 ✅ Motor (mostra o funcionamento do elevador)
 ✅ Feedback visual (LEDs indicando andar atual e status da porta)
 
+🔄 Movimentação do Motor
+As rotas de movimentação se dividem entre:
+
+Subida (sentido horário):
+
+SETB P3.0 e CLR P3.1
+
+Descida (sentido anti-horário):
+
+CLR P3.0 e SETB P3.1
+
 🖥️ Configuração de Hardware
 Entradas
 🔘 Botões Externos (Porta P1) → Chamar elevador para um andar:
